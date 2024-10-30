@@ -1,0 +1,70 @@
+install.packages("flexdashboard")
+install.packages("plotly")
+install.packages("p8105.datasets")
+
+library(flexdashboard)
+library(plotly)
+library(dplyr)
+library(p8105.datasets)
+
+```{r setup, include=FALSE}
+library(plotly)
+library(dplyr)
+library(p8105.datasets)
+
+# Load Instacart dataset
+data("instacart")
+
+# Sample a subset of the data for more manageable plotting
+instacart_sample <- instacart %>% sample_n(1000)
+
+scatter_data <- instacart_sample %>%
+  group_by(department_id) %>%
+  summarize(average_add_to_cart_order = mean(add_to_cart_order, na.rm = TRUE),
+            total_orders = n()) %>%
+  filter(total_orders > 10)
+```
+
+```{r}
+scatter_plot <- plot_ly(data = scatter_data,
+                        x = ~department_id,
+                        y = ~average_add_to_cart_order,
+                        type = "scatter",
+                        mode = "markers") %>%
+  layout(title = "Average Add-to-Cart Order by Department ID",
+         xaxis = list(title = "Department ID"),
+         yaxis = list(title = "Average Add-to-Cart Order"))
+
+scatter_plot
+```
+
+```{r}
+bar_data <- instacart_sample %>%
+  count(aisle_id, name = "count") %>%
+  top_n(10, count)
+
+bar_plot <- plot_ly(data = bar_data,
+                    x = ~reorder(aisle_id, count),
+                    y = ~count,
+                    type = "bar") %>%
+  layout(title = "Top 10 Aisles by Order Count",
+         xaxis = list(title = "Aisle ID"),
+         yaxis = list(title = "Order Count"))
+
+bar_plot
+```
+
+```{r}
+box_data <- instacart_sample %>%
+  filter(department_id %in% c(4, 16, 19))
+
+box_plot <- plot_ly(data = box_data,
+                    x = ~factor(department_id),
+                    y = ~add_to_cart_order,
+                    type = "box") %>%
+  layout(title = "Distribution of Add-to-Cart Order by Selected Departments",
+         xaxis = list(title = "Department ID"),
+         yaxis = list(title = "Add-to-Cart Order"))
+
+box_plot
+```
